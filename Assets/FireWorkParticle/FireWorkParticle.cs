@@ -114,24 +114,48 @@ public class FireWorkParticle: MonoBehaviour {
 			ps.SetParticles(particles, num);
 		}
 	}
+
+#if UNITY_EDITOR
 	void OnApplicationQuit() {
-		Debug.Log("終了したよ!22");
+		SaveParticleData();
+	}
+
+	public void SaveParticleData() {
 		var data = ScriptableObject.CreateInstance<FireWorkData>();
-		data.baseTexture=		baseTexture;	
-		data.particleWidth=		particleWidth;
-		data.particleHeight=	particleHeight;
-		data.particleMinSize=	particleMinSize;
-		data.exploadMinPow=		exploadMinPow;
-		data.slowdownTime=		slowdownTime;
-		data.isRandomColor=		isRandomColor;
-		data.particleMaterial=	particleMaterial;
-		data.randomRotation=	randomRotation;
-		data.lookAtTarget=		lookAtTarget;
-		data.lookAtPosition=	lookAtPosition;
+		data.baseTexture = baseTexture;
+		data.particleWidth = particleWidth;
+		data.particleHeight = particleHeight;
+		data.particleMinSize = particleMinSize;
+		data.exploadMinPow = exploadMinPow;
+		data.slowdownTime = slowdownTime;
+		data.isRandomColor = isRandomColor;
+		data.particleMaterial = particleMaterial;
+		data.randomRotation = randomRotation;
+		data.lookAtTarget = lookAtTarget;
+		data.lookAtPosition = lookAtPosition;
 
 		string dirPath = Path.GetDirectoryName(AssetDatabase.GetAssetOrScenePath(this));
 		string path = dirPath + "/" + typeof(FireWorkData) + ".asset";
 		AssetDatabase.CreateAsset(data, path);
 		AssetDatabase.Refresh();
 	}
+
+	public void LoadParticleData() {
+		string dirPath = Path.GetDirectoryName(AssetDatabase.GetAssetOrScenePath(this));
+		string path = dirPath + "/" + typeof(FireWorkData) + ".asset";
+		var data = AssetDatabase.LoadAssetAtPath(path, typeof(FireWorkData)) as FireWorkData;
+
+		baseTexture = data.baseTexture;
+		particleWidth = data.particleWidth;
+		particleHeight = data.particleHeight;
+		particleMinSize = data.particleMinSize;
+		exploadMinPow = data.exploadMinPow;
+		slowdownTime = data.slowdownTime;
+		isRandomColor = data.isRandomColor;
+		particleMaterial = data.particleMaterial;
+		randomRotation = data.randomRotation;
+		lookAtTarget = data.lookAtTarget;
+		lookAtPosition = data.lookAtPosition;
+	}
+#endif
 }

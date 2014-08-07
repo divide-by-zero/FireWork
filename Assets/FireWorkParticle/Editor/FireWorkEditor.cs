@@ -16,9 +16,15 @@ public class FireWorkEditor : Editor {
 			fwp.baseTexture = EditorGUILayout.ObjectField("BaseTexture",fwp.baseTexture, typeof(Texture2D)) as Texture2D;
 
 			fwp.isPreview = EditorGUILayout.Toggle("プレビューモード", fwp.isPreview);
-			if (fwp.isPreview && Application.isPlaying) {
-				if (GUILayout.Button("プレビュー")) {
-					fwp.CreateParticle();
+			if (fwp.isPreview) {
+				if (Application.isPlaying) {
+					if (GUILayout.Button("プレビュー")) {
+						fwp.CreateParticle();
+					}
+				} else {
+					if (GUILayout.Button("ロールバック")) {
+						fwp.LoadParticleData();
+					}
 				}
 			}
 			EditorUtility.SetDirty(target);
@@ -37,8 +43,5 @@ public class FireWorkEditor : Editor {
 			EditorUtility.SetDirty(importer);
 			AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceUpdate);
 		}
-	}
-
-	public void OnSceneGUI() {
 	}
 }
