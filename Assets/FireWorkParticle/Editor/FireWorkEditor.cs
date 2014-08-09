@@ -4,26 +4,21 @@ using UnityEditor;
 
 [CustomEditor( typeof(FireWorkParticle) )]
 public class FireWorkEditor : Editor {
-	private bool isFoldOut = false;
 	public override void OnInspectorGUI() {
 		DrawDefaultInspector();
 		FireWorkParticle fwp = target as FireWorkParticle;
 
-		isFoldOut = EditorGUILayout.Foldout(isFoldOut, "Extend Editor");
-		if (isFoldOut) {
+		fwp.isExtend = EditorGUILayout.Foldout(fwp.isExtend, "Extend Editor");
+		if (fwp.isExtend) {
 			EditorGUILayout.MinMaxSlider(new GUIContent("ParticleSize"), ref fwp.particleMinSize, ref fwp.particleMaxSize, 0.01f, 5.0f);
 			EditorGUILayout.MinMaxSlider(new GUIContent("ExplodePower"), ref fwp.exploadMinPow, ref fwp.exploadMaxPow, 0.1f, 10.0f);
 			fwp.baseTexture = EditorGUILayout.ObjectField("BaseTexture",fwp.baseTexture, typeof(Texture2D)) as Texture2D;
 
-			fwp.isPreview = EditorGUILayout.Toggle("プレビューモード", fwp.isPreview);
+			fwp.isPreview = EditorGUILayout.Toggle("preview mode", fwp.isPreview);
 			if (fwp.isPreview) {
 				if (Application.isPlaying) {
-					if (GUILayout.Button("プレビュー")) {
+					if (GUILayout.Button("fire!")) {
 						fwp.CreateParticle();
-					}
-				} else {
-					if (GUILayout.Button("ロールバック")) {
-						fwp.LoadParticleData();
 					}
 				}
 			}

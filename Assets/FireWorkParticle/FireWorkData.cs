@@ -1,12 +1,7 @@
 ﻿using UnityEngine;
-using UnityEditor;
-using System.Collections;
-using System.IO;
 
-[InitializeOnLoad]
 public class FireWorkData : ScriptableObject {
-	readonly static string[] labels = { "Data", "ScriptableObject" };
-
+	public Vector3 position;
 	public Texture2D baseTexture;	//花火パーティクルの元になるテクスチャ。　readable で　フルカラーじゃないとエラーが出るので注意;
 	[Range(1, 128)]
 	public int particleWidth = 64;	//パーティクル個数　横

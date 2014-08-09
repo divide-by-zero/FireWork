@@ -1,7 +1,11 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.IO;
+
+#if UNITY_EDITOR
 using UnityEditor;
+[InitializeOnLoad]
+#endif
 
 public class FireWorkParticle: MonoBehaviour {
 	public Texture2D baseTexture;	//花火パーティクルの元になるテクスチャ。　readable で　フルカラーじゃないとエラーが出るので注意;
@@ -15,9 +19,10 @@ public class FireWorkParticle: MonoBehaviour {
 	public Vector3 randomRotation = new Vector3(15, 15, 180);
 	public GameObject lookAtTarget;
 	public Vector3 lookAtPosition;
-	[HideInInspector]
-	public bool isPreview;
+	[HideInInspector]public bool isPreview;
+	[HideInInspector]public bool isExtend;
 
+	private bool isCreate = false;
 	private float _slowDownTime;
 	private ParticleSystem ps;
 	private ParticleSystem.Particle[] particles;
@@ -27,7 +32,9 @@ public class FireWorkParticle: MonoBehaviour {
 			GameObject.Destroy(gameObject);
 			return;
 		}
-
+		if (!Application.isEditor) {
+			isPreview = false;
+		}
 		_slowDownTime = slowdownTime;
 
 		if (lookAtTarget) {
@@ -93,10 +100,12 @@ public class FireWorkParticle: MonoBehaviour {
 	// Use this for initialization
 	void Start () {
 		CreateParticle();
+		isCreate = true;
 	}
 	
 	// Update is called once per frame
 	void Update () {
+		if (isCreate == false) return;
 		_slowDownTime -= Time.deltaTime;
 
 		if (_slowDownTime < 0) {
@@ -121,41 +130,67 @@ public class FireWorkParticle: MonoBehaviour {
 	}
 
 	public void SaveParticleData() {
+		if (isPreview == false) return;
 		var data = ScriptableObject.CreateInstance<FireWorkData>();
 		data.baseTexture = baseTexture;
 		data.particleWidth = particleWidth;
 		data.particleHeight = particleHeight;
 		data.particleMinSize = particleMinSize;
+		data.particleMaxSize = particleMaxSize;
 		data.exploadMinPow = exploadMinPow;
+		data.exploadMaxPow = exploadMaxPow;
 		data.slowdownTime = slowdownTime;
 		data.isRandomColor = isRandomColor;
 		data.particleMaterial = particleMaterial;
 		data.randomRotation = randomRotation;
 		data.lookAtTarget = lookAtTarget;
 		data.lookAtPosition = lookAtPosition;
+		data.position = transform.position;
 
-		string dirPath = Path.GetDirectoryName(AssetDatabase.GetAssetOrScenePath(this));
-		string path = dirPath + "/" + typeof(FireWorkData) + ".asset";
+		string dirPath = Path.GetDirectoryName(AssetDatabase.GetAssetPath(MonoScript.FromMonoBehaviour(this)));
+		string path = dirPath + "/Cache/" + this.GetInstanceID() + ".asset";
 		AssetDatabase.CreateAsset(data, path);
 		AssetDatabase.Refresh();
+		EditorUtility.SetDirty(data);
 	}
 
 	public void LoadParticleData() {
-		string dirPath = Path.GetDirectoryName(AssetDatabase.GetAssetOrScenePath(this));
-		string path = dirPath + "/" + typeof(FireWorkData) + ".asset";
+		if (isPreview == false) return;
+		string dirPath = Path.GetDirectoryName(AssetDatabase.GetAssetPath(MonoScript.FromMonoBehaviour(this)));
+		string path = dirPath + "/Cache/" + this.GetInstanceID() + ".asset";
+		if (!File.Exists(path)) return;	//そのデータないよー
+	
 		var data = AssetDatabase.LoadAssetAtPath(path, typeof(FireWorkData)) as FireWorkData;
+		AssetDatabase.DeleteAsset(path);
 
 		baseTexture = data.baseTexture;
 		particleWidth = data.particleWidth;
 		particleHeight = data.particleHeight;
 		particleMinSize = data.particleMinSize;
+		particleMaxSize = data.particleMaxSize;
 		exploadMinPow = data.exploadMinPow;
+		exploadMaxPow = data.exploadMaxPow;
 		slowdownTime = data.slowdownTime;
 		isRandomColor = data.isRandomColor;
 		particleMaterial = data.particleMaterial;
 		randomRotation = data.randomRotation;
 		lookAtTarget = data.lookAtTarget;
 		lookAtPosition = data.lookAtPosition;
+		transform.position = data.position;
+	}
+
+	static FireWorkParticle() {
+		EditorApplication.playmodeStateChanged += ChangedPlaymodeState;
+	}
+
+	static void ChangedPlaymodeState() {
+		if (Application.isPlaying == false && EditorApplication.isPlayingOrWillChangePlaymode == false) {	//多分停止ボタンが押された
+			FireWorkParticle[] fwps = GameObject.FindObjectsOfType<FireWorkParticle>();
+			foreach (var fwp in fwps) {
+				fwp.LoadParticleData();
+			}
+		}
 	}
 #endif
+
 }
